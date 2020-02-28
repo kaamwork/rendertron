@@ -65,13 +65,13 @@ export class Renderer {
       }
     }
 
-    function waitForNetworkIdle(page, timeout: number, maxInflightRequests = 0) {
+    function waitForNetworkIdle(page: any, timeout: number, maxInflightRequests = 0) {
       page.on('request', onRequestStarted);
       page.on('requestfinished', onRequestFinished);
       page.on('requestfailed', onRequestFinished);
 
       let inflight = 0;
-      let fulfill;
+      let fulfill: any;
       let promise = new Promise(x => fulfill = x);
       let timeoutId = setTimeout(onTimeoutDone, timeout);
       return promise;
@@ -125,7 +125,7 @@ export class Renderer {
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
-      let promiseResp = await Promise.all([
+      let promiseResp: any = await Promise.all([
         page.goto(requestUrl, {timeout: this.config.timeout}),
         waitForNetworkIdle(page, 5000, 0), // equivalent to 'networkidle0'
       ]);
@@ -210,13 +210,13 @@ export class Renderer {
       dimensions: ViewportDimensions,
       options?: object): Promise<Buffer> {
 
-    function waitForNetworkIdle(page, timeout: number, maxInflightRequests = 0) {
+    function waitForNetworkIdle(page: any, timeout: number, maxInflightRequests = 0) {
       page.on('request', onRequestStarted);
       page.on('requestfinished', onRequestFinished);
       page.on('requestfailed', onRequestFinished);
 
       let inflight = 0;
-      let fulfill;
+      let fulfill: any;
       let promise = new Promise(x => fulfill = x);
       let timeoutId = setTimeout(onTimeoutDone, timeout);
       return promise;
@@ -258,7 +258,7 @@ export class Renderer {
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
-      let promiseResp = await Promise.all([
+      let promiseResp: any = await Promise.all([
         page.goto(url, {timeout: this.config.timeout}),
         waitForNetworkIdle(page, 5000, 0), // equivalent to 'networkidle0'
       ]);
