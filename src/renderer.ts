@@ -65,6 +65,39 @@ export class Renderer {
       }
     }
 
+    function waitForNetworkIdle(page, timeout: number, maxInflightRequests = 0) {
+      page.on('request', onRequestStarted);
+      page.on('requestfinished', onRequestFinished);
+      page.on('requestfailed', onRequestFinished);
+
+      let inflight = 0;
+      let fulfill;
+      let promise = new Promise(x => fulfill = x);
+      let timeoutId = setTimeout(onTimeoutDone, timeout);
+      return promise;
+
+      function onTimeoutDone() {
+        page.removeListener('request', onRequestStarted);
+        page.removeListener('requestfinished', onRequestFinished);
+        page.removeListener('requestfailed', onRequestFinished);
+        fulfill();
+      }
+
+      function onRequestStarted() {
+        ++inflight;
+        if (inflight > maxInflightRequests)
+          clearTimeout(timeoutId);
+      }
+
+      function onRequestFinished() {
+        if (inflight === 0)
+          return;
+        --inflight;
+        if (inflight === maxInflightRequests)
+          timeoutId = setTimeout(onTimeoutDone, timeout);
+      }
+    }
+
     const page = await this.browser.newPage();
 
     // Page may reload when setting isMobile
@@ -92,8 +125,11 @@ export class Renderer {
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
-      response = await page.goto(
-          requestUrl, {timeout: this.config.timeout, waitUntil: 'networkidle0'});
+      let promiseResp = await Promise.all([
+        page.goto(requestUrl, {timeout: this.config.timeout}),
+        waitForNetworkIdle(page, 5000, 0), // equivalent to 'networkidle0'
+      ]);
+      response = promiseResp[0];
     } catch (e) {
       console.error(e);
     }
@@ -173,6 +209,40 @@ export class Renderer {
       isMobile: boolean,
       dimensions: ViewportDimensions,
       options?: object): Promise<Buffer> {
+
+    function waitForNetworkIdle(page, timeout: number, maxInflightRequests = 0) {
+      page.on('request', onRequestStarted);
+      page.on('requestfinished', onRequestFinished);
+      page.on('requestfailed', onRequestFinished);
+
+      let inflight = 0;
+      let fulfill;
+      let promise = new Promise(x => fulfill = x);
+      let timeoutId = setTimeout(onTimeoutDone, timeout);
+      return promise;
+
+      function onTimeoutDone() {
+        page.removeListener('request', onRequestStarted);
+        page.removeListener('requestfinished', onRequestFinished);
+        page.removeListener('requestfailed', onRequestFinished);
+        fulfill();
+      }
+
+      function onRequestStarted() {
+        ++inflight;
+        if (inflight > maxInflightRequests)
+          clearTimeout(timeoutId);
+      }
+
+      function onRequestFinished() {
+        if (inflight === 0)
+          return;
+        --inflight;
+        if (inflight === maxInflightRequests)
+          timeoutId = setTimeout(onTimeoutDone, timeout);
+      }
+    }
+
     const page = await this.browser.newPage();
 
     // Page may reload when setting isMobile
@@ -188,8 +258,11 @@ export class Renderer {
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
-      response =
-          await page.goto(url, {timeout: this.config.timeout, waitUntil: 'networkidle0'});
+      let promiseResp = await Promise.all([
+        page.goto(url, {timeout: this.config.timeout}),
+        waitForNetworkIdle(page, 5000, 0), // equivalent to 'networkidle0'
+      ]);
+      response = promiseResp[0];
     } catch (e) {
       console.error(e);
     }
