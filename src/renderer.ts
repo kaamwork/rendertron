@@ -127,7 +127,7 @@ export class Renderer {
       // Navigate to page. Wait until there are no oustanding network requests.
       let promiseResp: any = await Promise.all([
         page.goto(requestUrl, {timeout: this.config.timeout}),
-        waitForNetworkIdle(page, 5000, 0), // equivalent to 'networkidle0'
+        waitForNetworkIdle(page, 2000, 0), // equivalent to 'networkidle0'
       ]);
       response = promiseResp[0];
     } catch (e) {
@@ -260,7 +260,7 @@ export class Renderer {
       // Navigate to page. Wait until there are no oustanding network requests.
       let promiseResp: any = await Promise.all([
         page.goto(url, {timeout: this.config.timeout}),
-        waitForNetworkIdle(page, 5000, 0), // equivalent to 'networkidle0'
+        waitForNetworkIdle(page, 2000, 0), // equivalent to 'networkidle0'
       ]);
       response = promiseResp[0];
     } catch (e) {
